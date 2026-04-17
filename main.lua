@@ -1,7 +1,16 @@
-local loveVersion = (arg[1] or '11.5')
+local versionArg = 0
+for index, arg in pairs(arg) do
+    if arg == "--love-version" then
+        versionArg = index + 1
+    end
+end
+
+local loveVersion = (arg[versionArg] or '11.5')
+
+print(loveVersion)
 
 ---@diagnostic disable-next-line: unresolved-require
-local api = require('upstream.love-api." .. loveVersion .. ".love_api')
+local api = require('upstream.love-api.' .. loveVersion:gsub("%.", "_") .. '.love_api')
 
 local function safeDesc(src)
     return string.gsub(src, "\n", "\n---")
