@@ -1,5 +1,7 @@
+local loveVersion = (arg[1] or '11.5')
 
-local api = require('love_api')
+---@diagnostic disable-next-line: unresolved-require
+local api = require('upstream.love-api." .. loveVersion .. ".love_api')
 
 local function safeDesc(src)
     return string.gsub(src, "\n", "\n---")
@@ -39,7 +41,8 @@ local function genFunction(moduleName, fun, static)
                     else
                         argList = argList .. ', ' .. argument.name
                     end
-                    code = code .. '---@param ' .. argument.name .. ' ' .. argument.type .. ' @' .. argument.description .. '\n'
+                    code = code ..
+                        '---@param ' .. argument.name .. ' ' .. argument.type .. ' @' .. argument.description .. '\n'
                 end
             else
                 code = code .. '---@overload fun('
@@ -76,7 +79,7 @@ local function genType(name, type)
     end
     code = code .. '\n'
     code = code .. '---' .. safeDesc(type.description) .. '\n'
-    code = code .. 'local ' .. name ..  ' = {}\n'
+    code = code .. 'local ' .. name .. ' = {}\n'
     -- functions
     if type.functions then
         for i, fun in ipairs(type.functions) do
@@ -104,8 +107,8 @@ local function genEnum(enum)
     return code
 end
 
-local function genModule(name, api)
-    local f = assert(io.open("api/" .. name .. ".lua", 'w'))
+local function genModule(name, api, version)
+    local f = assert(io.open("dist/" .. version .. "/" .. name .. ".lua", 'w'))
     f:write("---@class " .. name .. '\n')
     if api.description then
         f:write('---' .. safeDesc(api.description) .. '\n')
@@ -133,7 +136,7 @@ local function genModule(name, api)
         for i, m in ipairs(api.modules) do
             f:write("---@type " .. name .. '.' .. m.name .. '\n')
             f:write("m." .. m.name .. ' = nil\n\n')
-            genModule(name .. '.' .. m.name, m)
+            genModule(name .. '.' .. m.name, m, version)
         end
     end
 
@@ -146,6 +149,7 @@ local function genModule(name, api)
     f:close()
 end
 
-genModule('love', api)
+os.execute("mkdir -p dist/" .. loveVersion)
+genModule('love', api, loveVersion)
 
 print('--finished.')
