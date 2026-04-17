@@ -1,0 +1,3 @@
+[submodule "upstream/love-api/11_5"]
+	path = upstream/love-api/11_5
+	url = git@github.com:love2d-community/love-api.git
